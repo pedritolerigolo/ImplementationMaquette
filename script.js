@@ -33,19 +33,15 @@ const data = [
 
 const COLS = pluginVersions.length; // 11
 const ROWS = phpVersions.length; // 7
-const ROW_H = 52;
-const COL_W = 80;
-const LEFT_PAD = 72;
-const TOP_PAD = 30;
+const ROW_H = 50;
+const COL_W = 78;
+const LEFT_PAD = 78;
+const TOP_PAD = 32;
 const MAX_VAL = 4500;
-const MAX_R = 34;
+const MAX_R = 30;
 
 const svgW = LEFT_PAD + COLS * COL_W;
 const svgH = TOP_PAD + ROWS * ROW_H;
-
-const svg = document.getElementById("chart");
-svg.setAttribute("viewBox", `0 0 ${svgW} ${svgH}`);
-svg.setAttribute("height", svgH);
 
 const NS = "http://www.w3.org/2000/svg";
 function el(tag, attrs = {}) {
@@ -61,73 +57,10 @@ function cy(row) {
   return TOP_PAD + row * ROW_H + ROW_H / 2;
 }
 
-// lignes horizontales (de gauche à droite)
-for (let r = 0; r < ROWS; r++) {
-  const y = cy(r);
-  svg.appendChild(
-    el("line", {
-      x1: LEFT_PAD,
-      y1: y,
-      x2: svgW,
-      y2: y,
-      stroke: "#e2e2ec",
-      "stroke-width": 1,
-    }),
-  );
-}
-
-// lignes verticales (de haut en bas)
-for (let c = 0; c < COLS; c++) {
-  const x = cx(c);
-  svg.appendChild(
-    el("line", {
-      x1: x,
-      y1: TOP_PAD,
-      x2: x,
-      y2: svgH,
-      stroke: "#e2e2ec",
-      "stroke-width": 1,
-    }),
-  );
-}
-
-// labels des versions de plugin
-for (let c = 0; c < COLS; c++) {
-  const t = el("text", {
-    x: cx(c),
-    y: TOP_PAD / 2,
-    "text-anchor": "middle",
-    "dominant-baseline": "middle",
-    "font-size": "12",
-    "font-weight": "600",
-    "font-family": "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
-    fill: "#444",
-  });
-  t.textContent = pluginVersions[c];
-  svg.appendChild(t);
-}
-
-// labels des versions de PHP
-for (let r = 0; r < ROWS; r++) {
-  const t = el("text", {
-    x: LEFT_PAD - 8,
-    y: cy(r),
-    "text-anchor": "end",
-    "dominant-baseline": "middle",
-    "font-size": "12",
-    "font-weight": "600",
-    "font-family": "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
-    fill: "#444",
-  });
-  t.textContent = phpVersions[r];
-  svg.appendChild(t);
-}
-
 //fonction pour l'opacité et la couleur des bulles
 function bubbleColor(ratio) {
   const LAVANDE_THRESHOLD = 0.08; // sous ce seuil = lavande/gris
   const ORANGE_START = 0.15; // au-dessus = orange pur et opacité croissante
-
   if (ratio < LAVANDE_THRESHOLD) {
     const t = ratio / LAVANDE_THRESHOLD;
     const a = +(0.4 + 0.2 * t).toFixed(2);
@@ -140,51 +73,125 @@ function bubbleColor(ratio) {
   }
 }
 
-const tooltip = document.getElementById("tooltip");
+function renderChart(svgId, chartData) {
+  const svg = document.getElementById(svgId);
+  svg.setAttribute("viewBox", `0 0 ${svgW} ${svgH}`);
+  svg.setAttribute("height", svgH);
 
-const allVals = data.flat().filter((v) => v > 0);
-const MIN_VAL = Math.min(...allVals);
+  // lignes horizontales
+  for (let r = 0; r < ROWS; r++) {
+    const y = cy(r);
+    svg.appendChild(
+      el("line", {
+        x1: LEFT_PAD,
+        y1: y,
+        x2: svgW,
+        y2: y,
+        stroke: "#ebebf0",
+        "stroke-width": 1,
+      }),
+    );
+  }
 
-for (let r = 0; r < ROWS; r++) {
+  // lignes verticales
   for (let c = 0; c < COLS; c++) {
-    const val = data[r][c];
-    const x = cx(c),
-      y = cy(r);
+    const x = cx(c);
+    svg.appendChild(
+      el("line", {
+        x1: x,
+        y1: TOP_PAD,
+        x2: x,
+        y2: svgH,
+        stroke: "#ebebf0",
+        "stroke-width": 1,
+      }),
+    );
+  }
 
-    if (val === 0) {
-      //pas de points
-      continue;
+  // labels des versions de plugin
+  for (let c = 0; c < COLS; c++) {
+    const t = el("text", {
+      x: cx(c),
+      y: TOP_PAD / 2,
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+      "font-size": "12.5",
+      "font-weight": "600",
+      "font-family": "Inter, Segoe UI, sans-serif",
+      fill: "#555",
+    });
+    t.textContent = pluginVersions[c];
+    svg.appendChild(t);
+  }
+
+  // labels des versions de PHP
+  for (let r = 0; r < ROWS; r++) {
+    const t = el("text", {
+      x: LEFT_PAD - 12,
+      y: cy(r),
+      "text-anchor": "end",
+      "dominant-baseline": "middle",
+      "font-size": "12.5",
+      "font-weight": "600",
+      "font-family": "Inter, Segoe UI, sans-serif",
+      fill: "#555",
+    });
+    t.textContent = phpVersions[r];
+    svg.appendChild(t);
+  }
+
+  // bulles oranges
+  const tooltip = document.getElementById("tooltip");
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const val = chartData[r][c];
+      const x = cx(c),
+        y = cy(r);
+      if (val === 0) continue;
+
+      const ratio = val / MAX_VAL;
+      const radius = Math.max(5, Math.round(Math.sqrt(ratio) * MAX_R));
+
+      const circle = el("circle", {
+        cx: x,
+        cy: y,
+        r: radius,
+        fill: bubbleColor(ratio),
+        opacity: 1,
+        style: "cursor:pointer;",
+      });
+
+      // tooltip au survol
+      circle.addEventListener("mouseenter", () => {
+        circle.setAttribute("r", Math.round(radius * 1.1));
+        tooltip.textContent = val.toLocaleString("fr-FR") + " installations";
+        const pt = svg.createSVGPoint();
+        pt.x = x;
+        pt.y = y;
+        const screen = pt.matrixTransform(svg.getScreenCTM());
+        tooltip.style.left = screen.x + "px";
+        tooltip.style.top = screen.y + radius + 14 + "px";
+        tooltip.style.opacity = 1;
+      });
+      circle.addEventListener("mouseleave", () => {
+        circle.setAttribute("r", radius);
+        tooltip.style.opacity = 0;
+      });
+
+      svg.appendChild(circle);
     }
-
-    const ratio = val / MAX_VAL;
-    const radius = Math.max(5, Math.round(Math.sqrt(ratio) * MAX_R));
-
-    const circle = el("circle", {
-      cx: x,
-      cy: y,
-      r: radius,
-      fill: bubbleColor(ratio),
-      opacity: 1,
-      style: "cursor:pointer;",
-    });
-
-    //tooltip au survol
-    circle.addEventListener("mouseenter", () => {
-      tooltip.textContent = val.toLocaleString("fr-FR") + " installations";
-      const svgEl = document.getElementById("chart");
-      const pt = svgEl.createSVGPoint();
-      pt.x = x;
-      pt.y = y;
-      const screen = pt.matrixTransform(svgEl.getScreenCTM());
-      tooltip.style.left = screen.x + "px";
-      tooltip.style.top = screen.y + radius + 14 + "px";
-      tooltip.style.opacity = 1;
-    });
-    circle.addEventListener("mouseleave", () => {
-      circle.setAttribute("r", radius);
-      tooltip.style.opacity = 0;
-    });
-
-    svg.appendChild(circle);
   }
 }
+
+// données aléatoires pour le second graphique
+function randomData() {
+  return Array.from({ length: ROWS }, () =>
+    Array.from({ length: COLS }, () =>
+      Math.random() < 0.45 ? 0 : Math.round(Math.random() * MAX_VAL),
+    ),
+  );
+}
+
+renderChart("chart", data);
+renderChart("chart-random", randomData());
