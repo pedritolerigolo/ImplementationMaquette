@@ -33,9 +33,9 @@ const data = [
 
 const COLS = pluginVersions.length; // 11
 const ROWS = phpVersions.length; // 7
-const ROW_H = 50;
+const ROW_H = 38;
 const COL_W = 78;
-const LEFT_PAD = 78;
+const LEFT_PAD = 90;
 const TOP_PAD = 32;
 const MAX_VAL = 4500;
 const MAX_R = 30;
@@ -85,7 +85,7 @@ function renderChart(svgId, chartData) {
       el("line", {
         x1: LEFT_PAD,
         y1: y,
-        x2: svgW,
+        x2: cx(COLS - 1) + 6,
         y2: y,
         stroke: "#ebebf0",
         "stroke-width": 1,
@@ -101,7 +101,7 @@ function renderChart(svgId, chartData) {
         x1: x,
         y1: TOP_PAD,
         x2: x,
-        y2: svgH,
+        y2: cy(ROWS - 1) + 6,
         stroke: "#ebebf0",
         "stroke-width": 1,
       }),
@@ -115,8 +115,8 @@ function renderChart(svgId, chartData) {
       y: TOP_PAD / 2,
       "text-anchor": "middle",
       "dominant-baseline": "middle",
-      "font-size": "12.5",
-      "font-weight": "600",
+      "font-size": "15",
+      "font-weight": "700",
       "font-family": "Inter, Segoe UI, sans-serif",
       fill: "#555",
     });
@@ -124,17 +124,17 @@ function renderChart(svgId, chartData) {
     svg.appendChild(t);
   }
 
-  // labels des versions de PHP
+  // labels des versions de PHP — alignés à gauche, gras, couleur foncée
   for (let r = 0; r < ROWS; r++) {
     const t = el("text", {
-      x: LEFT_PAD - 12,
+      x: 0,
       y: cy(r),
-      "text-anchor": "end",
+      "text-anchor": "start",
       "dominant-baseline": "middle",
-      "font-size": "12.5",
-      "font-weight": "600",
+      "font-size": "15",
+      "font-weight": "700",
       "font-family": "Inter, Segoe UI, sans-serif",
-      fill: "#555",
+      fill: "#3a3a3a",
     });
     t.textContent = phpVersions[r];
     svg.appendChild(t);
