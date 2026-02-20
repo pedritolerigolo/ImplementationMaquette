@@ -1,0 +1,1 @@
+Implémenter en HTML/CSS/JS la maquette https://sandbox.piwigo.com/i?/uploads/4/y/1/4y1zzhnrnw//2026/02/20/20260220104111-a5193f68-la.png : dans un premier temps, hardcoder des valeurs pour la taille des points orange. Dans un second temps, faire varier aléatoirement la valeur de chaque point au chargement de la page.
