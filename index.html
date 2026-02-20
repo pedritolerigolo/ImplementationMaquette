@@ -1,18 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Technique Piwigo - Exercice 1</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div class="chart-container">
-        <h1>PHP versions against plugin revision</h1>
-        <div id="grid" class="grid-container"></div>
+      <h1>PHP versions against plugin revision among xxxx installations</h1>
+      <p class="description">
+        Ces informations sont issues des statistiques anonymes récoltées auprès
+        des installations de Piwigo. Elles donnent un indice sur la
+        compatibilité avec la v de PHP sans en être une garantie.
+      </p>
+      <svg id="chart"></svg>
     </div>
 
+    <div class="tooltip" id="tooltip"></div>
+
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
